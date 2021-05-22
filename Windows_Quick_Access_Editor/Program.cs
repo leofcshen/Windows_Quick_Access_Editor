@@ -39,12 +39,11 @@ namespace Windows_Quick_Access_Editor
             do
             {
                 Console.WriteLine("1.刪除所有快速存取");
-                Console.WriteLine("2.單筆移除快速存取");
-                Console.WriteLine("3.批次新增快速存取");
-                Console.WriteLine("4.單筆新增快速存取");                
-                Console.WriteLine("5.離開");
+                Console.WriteLine("2.刪除單筆快速存取");
+                Console.WriteLine("3.新增批次快速存取");
+                Console.WriteLine("4.新增單筆快速存取");                
                 Console.WriteLine();
-                Console.Write("請選擇功能 1-5：");
+                Console.Write("請選擇功能，輸入 0 離開：");
 
                 bool success = Int32.TryParse(Console.ReadLine(), out int number); // 轉換選項
                 Console.WriteLine();
@@ -61,9 +60,9 @@ namespace Windows_Quick_Access_Editor
                                 try
                                 {
                                     File.Delete(filePath);
-                                    Console.WriteLine("全部刪除完成");
+                                    Console.WriteLine("刪除全部完成");
                                 }
-                                catch (Exception e) { Console.WriteLine("刪除失敗，錯誤碼：" + e.Message); }
+                                catch (Exception e) { Console.WriteLine("刪除全部失敗，錯誤碼：" + e.Message); }
                             }
                             else
                                 Console.WriteLine("檔案不存在");
@@ -87,11 +86,12 @@ namespace Windows_Quick_Access_Editor
                                     }
                                     foreach (var item in addList)
                                         addQuickAccess(item);
+                                    Console.WriteLine("新增批次成功");
                                 }
                                 else
                                     Console.WriteLine("config.ini 不存在。");
                             }
-                            catch (Exception e) { Console.WriteLine("批次新增失敗，錯誤碼：" + e.Message); }
+                            catch (Exception e) { Console.WriteLine("新增批次失敗，錯誤碼：" + e.Message); }
                             break;
 
                         case 4: // 單筆新增快速存取
@@ -109,84 +109,84 @@ namespace Windows_Quick_Access_Editor
                 separator();
             } while (run);
 
-            void addQuickAccess(string addFolderPath) // 新增快速存取
+            Console.WriteLine("運行結束，按任意鍵繼續");
+            Console.Read();
+        }
+
+        static void separator() // 分隔線
+        {
+            string str = new string('=', 50);
+            Console.WriteLine(str);
+        }
+
+        static void addQuickAccess(string addFolderPath) // 新增快速存取
+        {
+            try
             {
-                try
+                Type shellAppType = Type.GetTypeFromProgID("Shell.Application");
+                Object shell = Activator.CreateInstance(shellAppType);
+                Shell32.Folder2 f2 = (Shell32.Folder2)shellAppType.InvokeMember
+                    ("NameSpace", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { addFolderPath });
+                f2.Self.InvokeVerb("pintohome");
+                Console.WriteLine("新增單筆成功：" + addFolderPath);
+            }
+            catch (Exception e) { Console.WriteLine("新增單筆失敗：" + addFolderPath + " 錯誤碼：" + e.Message); }
+        }
+
+        static void delQuickAccess() // 單筆移除快速存取
+        {
+            string delFolderName = String.Empty;
+
+            try
+            {
+                bool run = true;
+
+                do
                 {
                     Type shellAppType = Type.GetTypeFromProgID("Shell.Application");
                     Object shell = Activator.CreateInstance(shellAppType);
-                    Shell32.Folder2 f2 = (Shell32.Folder2)shellAppType.InvokeMember
-                        ("NameSpace", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { addFolderPath });
-                    f2.Self.InvokeVerb("pintohome");
-                    Console.WriteLine("新增成功：" + addFolderPath);
-                }
-                catch (Exception e) { Console.WriteLine("新增失敗：" + addFolderPath + " 錯誤碼：" + e.Message); }
-            }
+                    Shell32.Folder2 f2 = (Shell32.Folder2)shellAppType.InvokeMember("NameSpace", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}" });
+                    int count = 1;
+                    Dictionary<int, string> dCurrentList = new Dictionary<int, string>(); // 存放目前的快速存存清單
 
-            void delQuickAccess() // 單筆移除快速存取
-            {
-                string delFolderName = String.Empty;
-
-                try
-                {
-                    bool run1 = true;
-
-                    do
+                    foreach (Shell32.FolderItem fi in f2.Items()) // 列出清單、加入 Dictionary
                     {
-                        Type shellAppType = Type.GetTypeFromProgID("Shell.Application");
-                        Object shell = Activator.CreateInstance(shellAppType);
-                        Shell32.Folder2 f2 = (Shell32.Folder2)shellAppType.InvokeMember("NameSpace", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}" });
-                        int count = 1;
-                        Dictionary<int, string> dCurrentList = new Dictionary<int, string>(); // 存放目前的快速存存清單
+                        Console.WriteLine(count + "：" + fi.Name);
+                        dCurrentList.Add(count, fi.Name);
+                        count++;
+                    }
+                    Console.WriteLine();
+                    Console.Write("請選擇要移除的項目，輸入 0 離開：");
 
-                        foreach (Shell32.FolderItem fi in f2.Items()) // 列出清單、加入 Dictionary
-                        {
-                            Console.WriteLine(count + "：" + fi.Name);
-                            dCurrentList.Add(count, fi.Name);
-                            count++;
-                        }
-                        Console.WriteLine();
-                        Console.Write("請輸入要移除快速存取的項目，輸入 0 離開：");
+                    bool success = Int32.TryParse(Console.ReadLine(), out int number); // 轉換選項
+                    Console.WriteLine();
+                    if (number == 0) // 離開
+                    {
+                        run = false;
+                        return;
+                    }
+                    if (dCurrentList.ContainsKey(number)) // 用 key 尋找 Dictionary，找到的話 delFolderName 賦值。
+                        delFolderName = dCurrentList[number];
+                    else
+                    {
+                        Console.WriteLine("找不到項目：" + number);
+                    }
 
-                        bool success = Int32.TryParse(Console.ReadLine(), out int number); // 轉換選項
-                        Console.WriteLine();
-                        if (number == 0) // 離開
+                    if (success)
+                    {
+                        foreach (Shell32.FolderItem fi in f2.Items())
                         {
-                            run1 = false;
-                            return;
-                        }    
-                        if (dCurrentList.ContainsKey(number)) // 用 key 尋找 Dictionary，找到的話 delFolderName 賦值。
-                            delFolderName = dCurrentList[number];
-                        else
-                        {
-                            Console.WriteLine("找不到項目：" + number);                            
-                        }
-
-                        if (success)
-                        {
-                            foreach (Shell32.FolderItem fi in f2.Items())
+                            if (fi.Name == delFolderName)
                             {
-                                if (fi.Name == delFolderName)
-                                {
-                                    ((Shell32.FolderItem)fi).InvokeVerb("unpinfromhome");
-                                    Console.WriteLine("刪除完成：" + delFolderName);
-                                }
+                                ((Shell32.FolderItem)fi).InvokeVerb("unpinfromhome");
+                                Console.WriteLine("刪除單筆完成：" + delFolderName);
                             }
                         }
-                        separator();
-                    } while (run1);
-                }
-                catch (Exception e) { Console.WriteLine("刪除失敗：" + delFolderName + " 錯誤碼：" + e.Message); }
+                    }
+                    separator();
+                } while (run);
             }
-
-            void separator() // 分隔線
-            {
-                string str = new string('=', 50);
-                Console.WriteLine(str);
-            }
-
-            Console.WriteLine("運行結束，按任意鍵繼續");
-            Console.Read();
+            catch (Exception e) { Console.WriteLine("刪除單筆失敗：" + delFolderName + " 錯誤碼：" + e.Message); }
         }
     }
 }
