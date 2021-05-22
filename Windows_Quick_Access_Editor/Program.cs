@@ -35,7 +35,8 @@ namespace Windows_Quick_Access_Editor
             separator();
 
             bool run = true; // 迴圈 flag
-
+            bool success; // 測試轉換選項
+            int number; // 選項
             do
             {
                 Console.WriteLine("1.刪除所有快速存取");
@@ -45,7 +46,7 @@ namespace Windows_Quick_Access_Editor
                 Console.WriteLine();
                 Console.Write("請選擇功能，輸入 0 離開：");
 
-                bool success = Int32.TryParse(Console.ReadLine(), out int number); // 轉換選項
+                success = Int32.TryParse(Console.ReadLine(), out number); // 轉換選項
                 Console.WriteLine();
 
                 if (success)
@@ -77,16 +78,25 @@ namespace Windows_Quick_Access_Editor
                             try
                             {
                                 if (File.Exists(configPath)) // config.ini 存在，把路徑存進 list。
-                                {
+                                {                                    
                                     using (StreamReader sr = new StreamReader(configPath, System.Text.Encoding.Default))
                                     {
                                         string line;
                                         while ((line = sr.ReadLine()) != null)
+                                        {
                                             addList.Add(line);
+                                            Console.WriteLine(line);
+                                        }
                                     }
-                                    foreach (var item in addList)
-                                        addQuickAccess(item);
-                                    Console.WriteLine("新增批次成功");
+                                    Console.WriteLine();
+                                    Console.Write("確認新增上列快速存取資料夾？(確定：1，取消：0)：");
+                                    success = Int32.TryParse(Console.ReadLine(), out number); // 轉換選項
+                                    if (success && number == 1)
+                                    {
+                                        foreach (var item in addList)
+                                            addQuickAccess(item);
+                                        Console.WriteLine("新增批次成功");
+                                    }
                                 }
                                 else
                                     Console.WriteLine("config.ini 不存在。");
