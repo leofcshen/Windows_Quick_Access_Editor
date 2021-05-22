@@ -111,7 +111,7 @@ namespace Windows_Quick_Access_Editor
                             addQuickAccess(addFolderPath);
                             break;
 
-                        case 5: // 離開
+                        case 0: // 離開
                             run = false;
                             break;
                     }
@@ -143,7 +143,7 @@ namespace Windows_Quick_Access_Editor
             catch (Exception e) { Console.WriteLine("新增單筆失敗：" + addFolderPath + " 錯誤碼：" + e.Message); }
         }
 
-        static void delQuickAccess() // 單筆移除快速存取
+        static void delQuickAccess() // 移除快速存取
         {
             string delFolderName = String.Empty;
 
