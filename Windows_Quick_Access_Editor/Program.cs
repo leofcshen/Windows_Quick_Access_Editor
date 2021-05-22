@@ -26,7 +26,7 @@ namespace Windows_Quick_Access_Editor
                 {
                     switch (number)
                     {
-                        case 1: // 刪除所有快速存取                            
+                        case 1: // 刪除所有快速存取
                             // 路徑在 "%AppData%\Microsoft\Windows\Recent\AutomaticDestinations\f01b4d95cf55d32a.automaticDestinations-ms"
                             string filePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Recent\AutomaticDestinations\f01b4d95cf55d32a.automaticDestinations-ms";
                             if (File.Exists(filePath)) // 檔案存在的話刪除
@@ -38,32 +38,31 @@ namespace Windows_Quick_Access_Editor
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine("程式報錯：" + e.Message);
+                                    Console.WriteLine("刪除失敗，錯誤碼：" + e.Message);
                                 }
                             }
+                            else
+                                Console.WriteLine("檔案不存在");
                             break;
+
                         case 2: // 批次新增快速存取
+                            string configPath = Directory.GetCurrentDirectory() + "\\config.ini";
+                            List<string> list = new List<string>();
+
                             try
                             {
-                                string configPath = Directory.GetCurrentDirectory() + "\\config.ini";
-                                List<string> list = new List<string>();
-                                if (File.Exists(configPath)) // config.ini 存在，把路徑存進 list
+                                if (File.Exists(configPath)) // config.ini 存在，把路徑存進 list。
                                 {
                                     using (StreamReader sr = new StreamReader(configPath, System.Text.Encoding.Default))
                                     {
                                         string line;
                                         while ((line = sr.ReadLine()) != null)
-                                        {
                                             list.Add(line);
-                                        }
                                     }
                                     foreach (var item in list)
-                                    {
-                                        Console.WriteLine(item);
                                         addQuickAccess(item);
-                                    }
                                 }
-                                else // config.ini 不存在，建立檔案
+                                else // config.ini 不存在，建立檔案，寫入 default 路徑。
                                 {
                                     using (FileStream fs = new FileStream(configPath, FileMode.Create, FileAccess.Write))
                                     {
@@ -78,22 +77,17 @@ namespace Windows_Quick_Access_Editor
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine("程式報錯：" + e.Message);
+                                Console.WriteLine("批次新增失敗，錯誤碼：" + e.Message);
                             }
                             break;
+
                         case 3: // 單筆新增快速存取
-                            try
-                            {
-                                Console.WriteLine("請輸入要加入快速存取的資料夾路徑：(例如 'D:\\PC')");
-                                string folderPath = Console.ReadLine();
-                                addQuickAccess(folderPath);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine("程式報錯：" + e.Message);
-                            }
+                            Console.WriteLine("請輸入要加入快速存取的資料夾路徑：(例如 'D:\\PC')");
+                            string folderPath = Console.ReadLine();
+                            addQuickAccess(folderPath);
                             break;
-                        case 4:
+
+                        case 4: // 離開
                             run = false;
                             break;
                     }
@@ -110,11 +104,11 @@ namespace Windows_Quick_Access_Editor
                     Shell32.Folder2 f = (Shell32.Folder2)shellAppType.InvokeMember
                         ("NameSpace", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { folderPath });
                     f.Self.InvokeVerb("pintohome");
-                    Console.WriteLine("新增完成");
+                    Console.WriteLine("新增成功：" + folderPath);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("程式報錯：" + e.Message);
+                    Console.WriteLine("新增失敗：" + folderPath + " 錯誤碼：" + e.Message);
                 }
             }
             void separator() // 分隔線
