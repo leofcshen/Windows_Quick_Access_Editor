@@ -144,7 +144,7 @@ namespace Windows_Quick_Access_Editor
             configList = new List<string>();
             try
             {
-                using (StreamReader sr = new StreamReader(configPath, System.Text.Encoding.Default))
+                using (StreamReader sr = new StreamReader(configPath, System.Text.Encoding.UTF8))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
