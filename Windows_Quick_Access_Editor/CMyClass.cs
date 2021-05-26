@@ -21,6 +21,7 @@ namespace Windows_Quick_Access_Editor
             public string Name { get; set; }
             public string Path { get; set; }
         }
+
         /// <summary>
         /// 目前的快速存取清單
         /// </summary>
@@ -154,6 +155,7 @@ namespace Windows_Quick_Access_Editor
             }
             catch (Exception ex) { return false; }
         }
+
         /// <summary>
         /// 匯出快速存取到 config.ini
         /// </summary>
